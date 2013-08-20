@@ -8,6 +8,7 @@ import argparse
 import json
 import logging
 import socket
+import re
 from subprocess import check_output
 from time import time, sleep
 
@@ -97,6 +98,40 @@ def collect_metrics():
 
   return status
 
+def varnish2_collect_metrics():
+  output = check_output(['varnishstat', '-1'])
+
+  varnish_stats = dict()
+
+  for line in output.split('\n'):
+    matches = re.match('([a-z_]+)\s+(\d+)\s+', line)
+
+    if matches:
+      varnish_stats[matches.group(1)] = matches.group(2)
+
+  timestamp = int(time())
+
+  status = []
+  fmt = lambda x, y: "{} {} {}".format(x, varnish_stats[y], timestamp)
+
+  metrics = [('cache.hit', 'cache_hit'),
+             ('cache.hitpass', 'cache_hitpass'),
+             ('cache.miss', 'cache_miss'),
+             ('backend.conn', 'backend_conn'),
+             ('backend.unhealthy', 'backend_unhealthy'),
+             ('backend.busy', 'backend_busy'),
+             ('backend.fail', 'backend_fail'),
+             ('backend.reuse', 'backend_reuse'),
+             ('backend.recycle', 'backend_recycle'),
+             ('client.conn', 'client_conn'),
+             ('client.req', 'client_req'),
+             ('client.hdrbytes', 's_hdrbytes'),
+             ('client.bodybytes', 's_bodybytes')]
+
+  for (name, metric) in metrics:
+    status.append(fmt(name, metric))
+
+  return status
 
 def main():
   parser = argparse.ArgumentParser(
@@ -133,7 +168,7 @@ def main():
     while True:
       interval_start = time()
 
-      c.send_metrics(collect_metrics())
+      c.send_metrics(varnish2_collect_metrics())
 
       interval_used = time() - interval_start
       if interval_used < float(args.interval):
