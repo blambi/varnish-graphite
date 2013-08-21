@@ -6,7 +6,8 @@ Small Python script for sending Varnish statistics to Graphite.
 
 ```
 usage: varnish-graphite [-h] [-H HOST] [-p PORT] [-P PREFIX] [-i INTERVAL]
-                        [-b BUFFER_SIZE] [-B MAX_BUFFER_SIZE]
+                        [-b BUFFER_SIZE] [-B MAX_BUFFER_SIZE] [-d PIDFILE]
+                        [-l LOGFILE]
 
 Collect and stream Varnish statistics to Graphite.
 
@@ -23,4 +24,10 @@ optional arguments:
   -B MAX_BUFFER_SIZE, --max-buffer-size MAX_BUFFER_SIZE
                         The maximum number of bytes to buffer when
                         reconnecting (default: 33554432)
+  -d PIDFILE, --demonize PIDFILE
+                        Fork to the background and store pid in PIDFILE
+                        (default: False)
+  -l LOGFILE, --logfile LOGFILE
+                        File to write log to, (default stdout) (default:
+                        False)
 ```
